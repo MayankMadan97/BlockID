@@ -6,14 +6,22 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
+import jakarta.annotation.PostConstruct;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final CustomOAuth2UserService customOAuth2UserService;
+    // private final CustomOAuth2UserService customOAuth2UserService;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
-        this.customOAuth2UserService = customOAuth2UserService;
+    // public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
+    // this.customOAuth2UserService = customOAuth2UserService;
+    // }
+
+    private final CustomOidcUserService customOidcUserService;
+
+    public SecurityConfig(CustomOidcUserService customOidcUserService) {
+        this.customOidcUserService = customOidcUserService;
     }
 
     @Bean
@@ -24,11 +32,19 @@ public class SecurityConfig {
                 .anyRequest()
                 .authenticated())
                 .oauth2Login(
-                        oAuth -> oAuth.userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                                .defaultSuccessUrl("/api/success", true)
-                   );
+                        oAuth -> oAuth.userInfoEndpoint(userInfo -> userInfo.oidcUserService(customOidcUserService))
+                                .defaultSuccessUrl("/api/success", true));
+        // .oauth2Login(
+        // oAuth -> oAuth.userInfoEndpoint(userInfo ->
+        // userInfo.userService(customOAuth2UserService))
+        // .defaultSuccessUrl("/api/success", true));
 
         return http.build();
+    }
+
+    @PostConstruct
+    void checkService() {
+        System.out.println("CustomOAuth2UserService bean loaded: " + customOidcUserService);
     }
 
 }
