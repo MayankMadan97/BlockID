@@ -12,33 +12,22 @@ import jakarta.annotation.PostConstruct;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // private final CustomOAuth2UserService customOAuth2UserService;
-
-    // public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
-    // this.customOAuth2UserService = customOAuth2UserService;
-    // }
-
+    private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomOidcUserService customOidcUserService;
 
-    public SecurityConfig(CustomOidcUserService customOidcUserService) {
+    public SecurityConfig(CustomOidcUserService customOidcUserService,
+            CustomOAuth2UserService customOAuth2UserService) {
         this.customOidcUserService = customOidcUserService;
+        this.customOAuth2UserService = customOAuth2UserService;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http.authorizeHttpRequests(auth -> auth.requestMatchers("/public/**", "/", "/error")
-                .permitAll()
-                .anyRequest()
-                .authenticated())
-                .oauth2Login(
-                        oAuth -> oAuth.userInfoEndpoint(userInfo -> userInfo.oidcUserService(customOidcUserService))
-                                .defaultSuccessUrl("/api/success", true));
-        // .oauth2Login(
-        // oAuth -> oAuth.userInfoEndpoint(userInfo ->
-        // userInfo.userService(customOAuth2UserService))
-        // .defaultSuccessUrl("/api/success", true));
-
+                .permitAll().anyRequest().authenticated()).oauth2Login(
+                        oAuth -> oAuth.userInfoEndpoint(userInfo -> userInfo.oidcUserService(customOidcUserService)
+                                .userService(customOAuth2UserService)).defaultSuccessUrl("/api/success", true));
         return http.build();
     }
 
